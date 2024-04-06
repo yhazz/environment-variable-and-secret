@@ -4,16 +4,21 @@ on:
     branches:
       - main
       - dev
+# variable d'environnement utilisable partout dans le workflow
 env:
   MONGODB_DB_NAME: gha-demo
 jobs:
   test:
+    # définit quel environnement créé sur GitHub sera utilisé (les secrets et variables de cet environnement seulement seront utilisés)
+    environment: testing
+    # variables d'environnement uniquement pour ce job
     env:
       MONGODB_CLUSTER_ADDRESS: cluster0.ed8ilna.mongodb.net
-      MONGODB_USERNAME: yahz
-      MONGODB_PASSWORD: HPlRxy5sbzcHovGI
+      # Utilise les secrets créés sur le site de GitHub
+      # un secret n'est pas visible, seulement modifiable.
+      MONGODB_USERNAME: ${{ secrets.MONGODB_USERNAME }}
+      MONGODB_PASSWORD: ${{ secrets.MONGODB_PASSWORD }}
       PORT: 8080
-    environment: testing
     runs-on: ubuntu-latest
     steps:
       - name: Get Code
@@ -30,6 +35,7 @@ jobs:
       - name: Run tests
         run: npm test
       - name: Output information
+        # affichera *** car MONGODB_USERNAME est déclaré comme un secret 
         run: |
           echo "MONGODB_USERNAME : ${{ env.MONGODB_USERNAME }}"
   deploy:
@@ -37,6 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Output information
+        # MONGODB_USERNAME sera laissé vide car il est déclaré au niveau du job test
         run: |        
           echo "MONGODB_USERNAME : ${{ env.MONGODB_USERNAME }}"
           echo "MONGODB_DB_NAME : $MONGODB_DB_NAME"
